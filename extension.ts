@@ -18,9 +18,15 @@ import * as ModalDialog from 'resource:///org/gnome/shell/ui/modalDialog.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 
+type Result<T> = [T | null | undefined, Error | null | undefined]
+
+// TODO: MORE
+const imgExtensions = new Set(['png', 'jpg', 'jpeg', 'bmp', 'webp'])
+
 class Indicator extends PanelMenu.Button {
   static GObject = GObject.registerClass(Indicator)
-  static testCounter = 0
+
+  private settings?: Gio.Settings;
 
   _init() {
     super._init(0.5, _('My Shiny Indicator'));
@@ -33,6 +39,10 @@ class Indicator extends PanelMenu.Button {
     this.fillMenu()
   }
 
+  setSettings(settings: Gio.Settings) {
+    this.settings = settings
+  }
+
   private fillMenu() {
     const item = new PopupMenu.PopupMenuItem(_('Show'));
     item.connect('activate', () => {
@@ -42,9 +52,11 @@ class Indicator extends PanelMenu.Button {
     this.menu.addMenuItem(item);
   }
 
-  // TODO: random
   private showRandomMeme() {
-    const pathToMeme = '/home/dimas/Pictures/test-memes/photo_2024-06-08_12-59-20.jpg';
+    const [pathToMeme, err] = this.getMeme()
+    if (!pathToMeme || err) {
+      return logError('Failed to get img path', err)
+    }
 
     let pixbuf: GdkPixbuf.Pixbuf;
     try {
@@ -109,7 +121,48 @@ class Indicator extends PanelMenu.Button {
     const debugCloseOnTimeout = false
     if (debugCloseOnTimeout) {
       setTimeout(() => dlg.close(), 3000)
-    } 
+    }
+  }
+
+  private getMeme(): Result<string> {
+    try {
+      const path = this.settings?.get_string('meme-folder')
+      if (!path) {
+        return [null, new Error(`No path found in settings`)]
+      }
+      const file = Gio.file_new_for_path(path)
+      const fileType = file.query_file_type(Gio.FileQueryInfoFlags.NONE, null)
+      if (fileType === Gio.FileType.UNKNOWN) {
+        return [null, new Error(`file/directory \`${path}\` does not exist`)]
+      }
+      if (fileType === Gio.FileType.REGULAR) {
+        return [path, null]
+      }
+      if (fileType !== Gio.FileType.DIRECTORY) {
+        return [null, new Error(`Don't know what to do with file type ${fileType}`)]
+      }
+      const children = file.enumerate_children('', Gio.FileQueryInfoFlags.NONE, null)
+      const imgs = []
+      let child: Gio.FileInfo | null = null
+      while ((child = children.next_file(null)) !== null) {
+        if (child.get_file_type() !== Gio.FileType.REGULAR) {
+          continue;
+        }
+        const fname = child.get_name()
+        const fExt = fname.split('.').at(-1)
+        if (fExt && imgExtensions.has(fExt)) {
+          imgs.push(fname)
+        }
+      }
+      if (!imgs.length) {
+        return [null, new Error(`No images found in ${path}`)]
+      }
+      const rand = Math.floor(Math.random() * imgs.length)
+      const fname = imgs[rand]
+      return [`${path}/${fname}`, null]
+    } catch (err) {
+      return [null, err instanceof Error ? err : new Error(String(err))]
+    }
   }
 }
 
@@ -121,6 +174,7 @@ export default class MyExtension extends Extension {
     this.gsettings = this.getSettings();
     // @ts-ignore
     this.indicator = new Indicator.GObject();
+    this.indicator.setSettings(this.gsettings)
     Main.panel.addToStatusArea(this.uuid, this.indicator);
   }
 
