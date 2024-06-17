@@ -1,0 +1,9 @@
+{
+    "name": "Test extension for Sber by D.Vesnin",
+    "description": "TODO",
+    "uuid": "dvesnin@test0for.sber",
+    "settings-schema": "org.gnome.shell.extensions.dvesnin-test-sber",
+    "shell-version": [
+        "46"
+    ]
+}

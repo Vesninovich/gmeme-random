@@ -1,0 +1,17 @@
+{
+  "name": "ext-test-0",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "description": "",
+  "devDependencies": {
+    "@girs/gjs": "4.0.0-beta.5",
+    "@girs/gnome-shell": "46.0.0-beta8",
+    "eslint": "9.5.0",
+    "eslint-plugin-jsdoc": "48.2.12",
+    "typescript": "5.4.5"
+  }
+}
