@@ -26,11 +26,14 @@ Specify folder from which to get memes in extensions settings.
 
 ## Build
 
+Install dependencies:
+
 ```bash
 npm i
 ```
 
+Build and install extension:
+
 ```bash
-make
-make install
+make && make install
 ```
