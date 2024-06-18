@@ -1,12 +1,9 @@
 {
-  "name": "ext-test-0",
+  "name": "gmeme",
   "version": "1.0.0",
   "type": "module",
-  "scripts": {
-  },
-  "author": "",
+  "author": "dvesnin",
   "license": "UNLICENSED",
-  "description": "",
   "devDependencies": {
     "@girs/gjs": "4.0.0-beta.5",
     "@girs/gnome-shell": "46.0.0-beta8",

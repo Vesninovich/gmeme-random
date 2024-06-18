@@ -1,5 +1,5 @@
-NAME=dvesnin
-DOMAIN=test0for.sber
+NAME=gmeme
+DOMAIN=dvesnin
 
 BUILT_SCHEMAS = schemas/gschemas.compiled
 ASSETS = metadata.json stylesheet.css
@@ -29,4 +29,4 @@ install: all assets
 	cp -rf dist ~/.local/share/gnome-shell/extensions/$(NAME)@$(DOMAIN)
 
 clean:
-	rm -rf dist $(NAME).zip
+	rm -rf dist $(NAME).zip $(BUILT_SCHEMAS)

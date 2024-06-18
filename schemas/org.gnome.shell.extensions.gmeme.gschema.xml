@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.gmeme" path="/org/gnome/shell/extensions/gmeme/">
+    <key name="meme-folder" type="s">
+      <default>"Pictures"</default>
+      <summary>Meme folder path</summary>
+      <description>Path to folder with memes</description>
+    </key>
+  </schema>
+</schemalist>
