@@ -1,54 +1,52 @@
 import GObject from 'gi://GObject';
-import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
-import Meta from 'gi://Meta';
-import Shell from 'gi://Shell';
 import St from 'gi://St';
-import Gtk from 'gi://Gtk';
 import Clutter from 'gi://Clutter';
-import Gdk from 'gi://Gdk'
 import GdkPixbuf from 'gi://GdkPixbuf'
 import Cogl from 'gi://Cogl?version=14';
 
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
-import * as Dialog from 'resource:///org/gnome/shell/ui/dialog.js';
 import * as ModalDialog from 'resource:///org/gnome/shell/ui/modalDialog.js';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 
-type Result<T> = [T | null | undefined, Error | null | undefined]
+type Option<T> = T | null | undefined
+type Result<T> = [Option<T>, Option<Error>]
 
-// TODO: MORE
+// TODO: more extensions
 const imgExtensions = new Set(['png', 'jpg', 'jpeg', 'bmp', 'webp'])
 
 class Indicator extends PanelMenu.Button {
-  static GObject = GObject.registerClass(Indicator)
+  static GObject = GObject.registerClass({
+    Properties: {
+      memeFolder: GObject.ParamSpec.string(
+        'memeFolder',
+        'memeFolder',
+        'memeFolder',
+        GObject.ParamFlags.READWRITE,
+        'none'
+      )
+    }
+  },
+    Indicator)
 
-  private settings?: Gio.Settings;
+  private memeFolder?: string
 
-  _init() {
-    super._init(0.5, _('My Shiny Indicator'));
+  _init(...args: any[]) {
+    super._init(...args);
 
     this.add_child(new St.Label({
-      text: _('Random meme'),
+      text: this.accessibleName,
       yAlign: Clutter.ActorAlign.CENTER
     }))
 
-    this.fillMenu()
-  }
-
-  setSettings(settings: Gio.Settings) {
-    this.settings = settings
-  }
-
-  private fillMenu() {
-    const item = new PopupMenu.PopupMenuItem(_('Show'));
+    const item = new PopupMenu.PopupMenuItem(_('Show random'));
     item.connect('activate', () => {
       this.showRandomMeme()
     });
-    // @ts-ignore
+    // @ts-ignore: `addMenuItem` does not exist on type for some reason
     this.menu.addMenuItem(item);
   }
 
@@ -126,9 +124,9 @@ class Indicator extends PanelMenu.Button {
 
   private getMeme(): Result<string> {
     try {
-      const path = this.settings?.get_string('meme-folder')
+      const path = this.memeFolder
       if (!path) {
-        return [null, new Error(`No path found in settings`)]
+        return [null, new Error(`No path set`)]
       }
       const file = Gio.file_new_for_path(path)
       const fileType = file.query_file_type(Gio.FileQueryInfoFlags.NONE, null)
@@ -167,19 +165,16 @@ class Indicator extends PanelMenu.Button {
 }
 
 export default class MyExtension extends Extension {
-  private gsettings?: Gio.Settings
   private indicator?: Indicator;
 
   enable() {
-    this.gsettings = this.getSettings();
-    // @ts-ignore
-    this.indicator = new Indicator.GObject();
-    this.indicator.setSettings(this.gsettings)
+    const settings = this.getSettings()
+    this.indicator = new Indicator.GObject(0.5, _('memes'));
+    settings.bind('meme-folder', this.indicator, 'memeFolder', Gio.SettingsBindFlags.DEFAULT)
     Main.panel.addToStatusArea(this.uuid, this.indicator);
   }
 
   disable() {
-    this.gsettings = undefined;
     this.indicator?.destroy();
     this.indicator = undefined;
   }
