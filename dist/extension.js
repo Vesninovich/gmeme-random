@@ -96,7 +96,6 @@ class Indicator extends PanelMenu.Button {
             }
             const file = Gio.file_new_for_path(path);
             const fileType = file.query_file_type(Gio.FileQueryInfoFlags.NONE, null);
-            console.log(file.get_path());
             if (fileType === Gio.FileType.UNKNOWN) {
                 return [null, new Error(`file/directory \`${path}\` does not exist`)];
             }

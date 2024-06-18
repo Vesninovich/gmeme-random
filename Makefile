@@ -24,7 +24,7 @@ $(NAME).zip: assets
 
 pack: $(NAME).zip
 
-install: all assets
+install:
 	-rm -rf ~/.local/share/gnome-shell/extensions/$(NAME)@$(DOMAIN)
 	cp -rf dist ~/.local/share/gnome-shell/extensions/$(NAME)@$(DOMAIN)
 
