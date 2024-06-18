@@ -22,7 +22,9 @@ Some memes for testing are already included in this repo, check `example-memes/`
 
 ## Usage
 
-Specify folder from which to get memes in extensions settings.
+1. Specify folder from which to get memes in extensions settings
+2. Click on `memes -> Show Random` in top bar
+3. Enjoy
 
 ## Build
 
